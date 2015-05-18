@@ -73,6 +73,13 @@ like this:
             # Client Secret
             'consumer_secret': '1a9…'
         },
+        # http://connect.qq.com/manage/index
+        "flask_social_blueprint.providers.QQ": {
+            # Client ID
+            'consumer_key': '6f6…',
+            # Client Secret
+            'consumer_secret': '1a9…'
+        },
     }
 
 Done!
@@ -179,6 +186,7 @@ main URL http://dev.example.com:5055 and callbacks URLS like these:
 - http://dev.example.com:5055/_social/callback/Twitter
 - http://dev.example.com:5055/_social/callback/Github
 - http://dev.example.com:5055/_social/callback/Douban
+- http://dev.example.com:5055/_social/callback/QQ
 
 Twitter
 ^^^^^^^

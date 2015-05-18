@@ -309,3 +309,63 @@ class Weibo(BaseProvider):
             "email": None,
         }
         return ExternalProfile(profile.get('id'), data, raw_data)
+
+
+class QQ(BaseProvider):
+
+    def __init__(self, *args, **kwargs):
+        defaults = {
+            'name': 'QQ',
+            'base_url': 'https://graph.qq.com',
+            'authorize_url': 'https://graph.qq.com/oauth2.0/authorize',
+            'request_token_params': {
+                'response_type': 'code',
+            },
+            'access_token_url': 'https://graph.qq.com/oauth2.0/token',
+            'access_token_method': 'GET',
+            'access_token_params': {
+                'grant_type': 'authorization_code',
+            },
+            'request_token_url': None,
+        }
+        defaults.update(kwargs)
+        super(QQ, self).__init__(*args, **defaults)
+
+    def get_profile(self, raw_data):
+        access_token = raw_data['access_token']
+
+        import requests
+        import json
+        payload = {
+            'access_token': access_token,
+        }
+        r = requests.get('https://graph.qq.com/oauth2.0/me', params=payload)
+        if not r.ok:
+            raise Exception("Could not load profile data from QQ API")
+        import re
+        pattern = re.compile('openid":"(\w*)"}')
+        openid = pattern.search(r.text).groups()[0]
+        payload = {
+            'access_token': access_token,
+            'oauth_consumer_key': self.consumer_key,
+            'openid': openid,
+            'format': 'json',
+        }
+        r = requests.get('https://graph.qq.com/user/get_user_info',
+                         params=payload)
+        if not r.ok:
+            raise Exception("Could not load profile data from QQ API")
+        profile = json.loads(r.text or r.content)
+
+        data = {
+            "provider": "QQ",
+            "profile_id": openid,
+            "username": profile.get("nickname"),
+            "cn": profile.get("nickname"),
+            "image_url": profile.get("figureurl"),
+            "profile_url": None,
+            "access_token": access_token,
+            "secret": None,
+            "email": None,
+        }
+        return ExternalProfile(openid, data, raw_data)
