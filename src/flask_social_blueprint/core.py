@@ -64,9 +64,14 @@ class SocialBlueprint(Blueprint):
         return self.login_connection(connection, profile, provider)
 
     def login_connection(self, connection, profile, provider):
-        user = connection.get_user()
-        assert user, "Connection did not returned a User instance"
-        login_user(user)
+        try:
+            user = connection.get_user()
+            login_user(user)
+        except Exception as ex:
+            logging.warn(ex, exc_info=True)
+            do_flash(_("Could not login: {}").format(ex.message), "warning")
+            return self.login_failed_redirect(profile, provider)
+
         return self.login_redirect(profile, provider)
 
     def login_redirect(self, profile, provider):
